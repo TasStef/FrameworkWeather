@@ -2,6 +2,22 @@ const depsMap = new Map();
 let currentEffect = null;
 const effectStack = [];
 
+function createEffect(fn) {
+  const effect = function effect(...args) {
+    if (effectStack.indexOf(effect) === -1) {
+      try {
+        currentEffect = effect;
+        effectStack.push(effect);
+        return fn(...args);
+      } finally {
+        effectStack.pop();
+        currentEffect = effectStack[effectStack.length - 1];
+      }
+    }
+  };
+  effect();
+}
+
 function render(element, content) {
   const app = document.querySelector(element);
   if (app !== null) {
@@ -40,7 +56,7 @@ function track(target, key) {
     let deps = depsMap.get(target);
     if (!deps) {
       deps = new Map();
-      deps.set(target, deps);
+      depsMap.set(target, deps);
     }
     let dep = deps.get(key);
     if (!dep) {
@@ -50,33 +66,15 @@ function track(target, key) {
   }
 }
 
-function createEffect(fn) {
-  const effect = function effect(...args) {
-    if (effectStack.indexOf(effect) === -1) {
-      try {
-        createEffect = effect;
-        effectStack.push(effect);
-        return fn(...args);
-      } finally {
-        effectStack.pop();
-        createEffect = effectStack[effectStack.length - 1];
-      }
-    }
-  };
-  effect();
-}
-
 function trigger(target, key) {
   const deps = depsMap.get(target);
-
   if (!deps) return;
   const dep = deps.get(key);
 
   if (dep) {
-    const effectToRun = new Set(dep);
-    effectToRun.forEach((effect) => effect());
+    const effectsToRun = new Set(dep);
+    effectsToRun.forEach((effect) => {
+      effect();
+    });
   }
-
-  // console.log(target, key);
-  // renderApp();
 }

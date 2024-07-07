@@ -1,5 +1,5 @@
 let state = reactive({
-  selectedCity: "N/A",
+  selectedCity: "London",
   weather: {
     temperature: "N/A",
     humidity: "N/A",
@@ -38,11 +38,20 @@ function fetchWeather(city) {
   }, 500);
 }
 
-function renderApp() {
+function updateSelectedCity(city) {
+  state.selectedCity = city;
+  fetchWeather(city);
+}
+
+/**
+ * Function to render the application content based on the selected city's weather information.
+ *
+ */
+createEffect(() => {
   console.log("re-rendering...");
   render(
     "#container",
-    `<select onChange="updateSelectedCity(this.value);renderApp()">
+    `<select onChange="updateSelectedCity(this.value);">
        <option value="" hidden selected>Select a city</option>
       <option ${
         state.selectedCity === "Tokyo" ? "selected" : ""
@@ -63,15 +72,8 @@ function renderApp() {
       <p>Description: ${state.weather.description}</p>
     </div>`
   );
-}
-
-function updateSelectedCity(city) {
-  state.selectedCity = city;
-  fetchWeather(city);
-}
+});
 
 createEffect(function () {
   fetchWeather(state.selectedCity);
 });
-
-renderApp();
