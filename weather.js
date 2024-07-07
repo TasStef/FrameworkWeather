@@ -70,8 +70,4 @@ function updateSelectedCity(city) {
   fetchWeather(city);
 }
 
-createEffect(function () {
-  fetchWeather(state.selectedCity);
-});
-
 renderApp();
